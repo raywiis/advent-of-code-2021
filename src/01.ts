@@ -6,7 +6,7 @@ const getPeaks = (depths: number[]) =>
 		.map((num, idx, arr) => num > arr[idx - 1])
 		.reduce((acc, curr) => (curr ? acc + 1 : acc), 0);
 
-const singlePeaks = getPeaks(data);
+export const singlePeaks = getPeaks(data);
 
 console.log(`Single dips ${singlePeaks}`);
 
@@ -16,6 +16,6 @@ const windowedDepths = data
 	)
 	.filter((a): a is number => !!a);
 
-const windowedPeaks = getPeaks(windowedDepths);
+export const windowedPeaks = getPeaks(windowedDepths);
 
 console.log(`Window dips ${windowedPeaks}`);
