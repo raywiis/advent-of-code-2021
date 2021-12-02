@@ -23,17 +23,17 @@ const input = await Deno.readTextFile(join(__dirname, "02.input.txt"));
 const directions = input
 	.split("\n")
 	.map((c) => c.trim().split(" "))
-	.map(
-		([cmd, num]) =>
-			[cmd, parseInt(num)] as [command: keyof typeof commands, param: number]
-	);
+	.map(([cmd, num]): [cmd: keyof typeof commands, num: number] => [
+		cmd,
+		parseInt(num),
+	]);
 
 const finalPosition = directions.reduce(
 	(position, [command, param]) => commands[command](position, param),
 	initialPosition
 );
 
-export const part1 = finalPosition.depth * finalPosition.horizontal
+export const part1 = finalPosition.depth * finalPosition.horizontal;
 console.log(part1);
 
 const aimCommands: {
