@@ -1,4 +1,10 @@
-const input = await Deno.readTextFile("src/01.input.txt");
+import {
+	fromFileUrl,
+	dirname,
+	join,
+} from "https://deno.land/std@0.116.0/path/mod.ts";
+const __dirname = dirname(fromFileUrl(import.meta.url));
+const input = await Deno.readTextFile(join(__dirname, "01.input.txt"));
 const data = input.split("\n").map((num) => parseInt(num, 10));
 
 const getPeaks = (depths: number[]) =>
