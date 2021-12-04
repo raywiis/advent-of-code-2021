@@ -4,6 +4,7 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
+import { iterMap, collect } from "../utils.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
@@ -61,27 +62,25 @@ const getBoardScore = (board: Board, number: number) => {
 
 const boards = boardData.map((b) => parseBoard(b));
 
+const removeFromBoard = (b: Board, number: number): Board => ({
+	...b,
+	rows: b.rows.map((r) => r.filter((n) => n !== number)),
+	columns: b.columns.map((c) => c.filter((n) => n !== number)),
+});
+
 let winners = 0;
 const winMap = boards.map((_) => false);
+let currentBoards = boards;
 for (const number of numbers) {
 	let won = false;
-	for (const [bIdx, board] of boards.entries()) {
+
+	currentBoards = collect(
+		iterMap(currentBoards.values(), (board) => removeFromBoard(board, number))
+	);
+
+	for (const [bIdx, board] of currentBoards.entries()) {
 		if (winMap[bIdx]) {
 			continue;
-		}
-
-		for (const row of board.rows) {
-			const idx = row.findIndex((n) => n === number);
-			if (idx !== -1) {
-				row.splice(idx, 1);
-			}
-		}
-
-		for (const col of board.columns) {
-			const idx = col.findIndex((n) => n === number);
-			if (idx !== -1) {
-				col.splice(idx, 1);
-			}
 		}
 
 		if (boardWon(board)) {
