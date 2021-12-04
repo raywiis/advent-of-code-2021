@@ -1,5 +1,5 @@
 default:
-	deno run --allow-read src/02/02.ts
+	deno run --allow-read src/03/03.ts
 
 test:
 	deno test --allow-read
