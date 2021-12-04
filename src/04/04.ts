@@ -65,7 +65,6 @@ let winners = 0;
 const winMap = boards.map((_) => false);
 for (const number of numbers) {
 	let won = false;
-	console.log(number)
 	for (const [bIdx, board] of boards.entries()) {
 		if (winMap[bIdx]) {
 			continue;
