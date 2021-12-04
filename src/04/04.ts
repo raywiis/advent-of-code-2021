@@ -42,6 +42,10 @@ const parseBoard = (i: string): Board => {
 	return { rows, columns };
 };
 
+const boardWon = (board: Board): boolean =>
+	board.rows.some((row) => row.length === 0) ||
+	board.columns.some((col) => col.length === 0);
+
 const getBoardScore = (board: Board, number: number) => {
 	const sums = board.rows.map((row) => {
 		let sum = 0;
@@ -66,14 +70,11 @@ for (const number of numbers) {
 		if (winMap[bIdx]) {
 			continue;
 		}
-		let winning = false;
+
 		for (const row of board.rows) {
 			const idx = row.findIndex((n) => n === number);
 			if (idx !== -1) {
 				row.splice(idx, 1);
-			}
-			if (row.length === 0) {
-				winning = true;
 			}
 		}
 
@@ -82,12 +83,9 @@ for (const number of numbers) {
 			if (idx !== -1) {
 				col.splice(idx, 1);
 			}
-			if (col.length === 0) {
-				winning = true;
-			}
 		}
 
-		if (winning) {
+		if (boardWon(board)) {
 			if (!winMap[bIdx]) {
 				winMap[bIdx] = true;
 				winners += 1;
