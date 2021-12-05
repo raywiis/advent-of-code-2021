@@ -16,3 +16,14 @@ export function collect<T>(it: IterableIterator<T>) {
 	}
 	return arr;
 }
+
+export function* iterFilter<T>(
+	it: IterableIterator<T>,
+	filterFn: (value: T) => boolean
+) {
+	for (const value of it) {
+		if (filterFn(value)) {
+			yield value;
+		}
+	}
+}
