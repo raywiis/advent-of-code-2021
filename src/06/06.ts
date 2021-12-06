@@ -19,20 +19,18 @@ const buckets = data.reduce((map, item) => {
 const initialTimer = 8;
 const resetTimer = 6;
 
-const runDay = (
-	initialFishes: Map<number, number>,
-): Map<number, number> => {
+const runDay = (initialFishes: Map<number, number>): Map<number, number> => {
 	const map = new Map();
-  for (const [days, fishCount] of initialFishes.entries()) {
-    if (days === 0) {
-      map.set(resetTimer, (map.get(resetTimer) || 0) + fishCount);
-      map.set(initialTimer, (map.get(initialTimer) || 0) + fishCount);
-      continue;
-    }
-    map.set(days - 1, (map.get(days - 1) || 0) + fishCount);
-  }
-  return map;
-}
+	for (const [days, fishCount] of initialFishes.entries()) {
+		if (days === 0) {
+			map.set(resetTimer, (map.get(resetTimer) || 0) + fishCount);
+			map.set(initialTimer, (map.get(initialTimer) || 0) + fishCount);
+			continue;
+		}
+		map.set(days - 1, (map.get(days - 1) || 0) + fishCount);
+	}
+	return map;
+};
 
 const runDays = (
 	initialFishes: Map<number, number>,
@@ -40,7 +38,7 @@ const runDays = (
 ): Map<number, number> => {
 	let map = new Map(initialFishes);
 	for (let i = 0; i < days; i++) {
-    map = runDay(map);
+		map = runDay(map);
 	}
 	return map;
 };
