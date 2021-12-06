@@ -34,7 +34,7 @@ const horizontalLines = lines.filter(
 	([[x1, y1], [x2, y2]]) => x1 === x2 || y1 === y2
 );
 
-function *coordinatesAlongLine(line: Line): Iterable<Point> {
+function* coordinatesAlongLine(line: Line): Iterable<Point> {
 	const [[x1, y1], [x2, y2]] = line;
 
 	const xMin = Math.min(x1, x2);
@@ -44,41 +44,33 @@ function *coordinatesAlongLine(line: Line): Iterable<Point> {
 
 	const iterationCount = Math.max(yMax - yMin, xMax - xMin);
 	for (let i = 0; i < iterationCount + 1; i++) {
-		const x = x1 === x2
-			? x1
-			: x1 < x2
-			? x1 + i
-			: x1 - i;
+		const x = x1 === x2 ? x1 : x1 < x2 ? x1 + i : x1 - i;
 
-		const y = y1 === y2
-			? y1
-			: y1 < y2
-			? y1 + i
-			: y1 - i
+		const y = y1 === y2 ? y1 : y1 < y2 ? y1 + i : y1 - i;
 
-		yield [x, y]
+		yield [x, y];
 	}
 }
 
-const pointKey = (point: Point) => JSON.stringify(point)
+const pointKey = (point: Point) => JSON.stringify(point);
 const countOverlaps = (lines: Line[]): number => {
 	const map = new Map();
 	for (const line of lines) {
 		for (const point of coordinatesAlongLine(line)) {
-			const key = pointKey(point)
-			map.set(key, 1 + (map.get(key) || 0))
+			const key = pointKey(point);
+			map.set(key, 1 + (map.get(key) || 0));
 		}
 	}
 	const horizontalOverlaps = collect(
 		iterFilter(map.entries(), ([_, value]) => value > 1)
 	);
-	return horizontalOverlaps.length
-}
+	return horizontalOverlaps.length;
+};
 
-export const horizontalOverlaps = countOverlaps(horizontalLines)
+export const horizontalOverlaps = countOverlaps(horizontalLines);
 
 console.log(horizontalOverlaps);
 
 export const wholeOverlaps = countOverlaps(lines);
 
-console.log(wholeOverlaps)
+console.log(wholeOverlaps);
