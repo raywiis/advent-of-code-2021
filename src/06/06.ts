@@ -33,9 +33,8 @@ const runDays = (
 				continue;
 			}
 			newMap.set(days - 1, (newMap.get(days - 1) || 0) + fishCount);
-
-			map = newMap;
 		}
+    map = newMap;
 	}
 	return map;
 };
