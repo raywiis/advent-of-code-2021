@@ -4,7 +4,7 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import { collect, iterFilter, iterMap, setRemove, bothHave } from "../utils.ts";
+import { collect, iterMap, setRemove, bothHave } from "../utils.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
