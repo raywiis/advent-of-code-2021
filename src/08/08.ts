@@ -21,7 +21,6 @@ const data = input
 	}));
 
 type Segment = "a" | "b" | "c" | "e" | "d" | "e" | "f" | "g";
-type SegmentSet = Map<number, Set<Segment>>;
 
 const intoSets = ([key, vals]: [number, Segment[]]): [number, Set<Segment>] => [
 	key,
