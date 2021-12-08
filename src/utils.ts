@@ -50,3 +50,12 @@ export function bothHave<T>(s1: Set<T>, s2: Set<T>): Set<T> {
 	}
 	return set;
 }
+
+export function iterOnlyOne<T>(it: IterableIterator<T>): T {
+	const one = it.next();
+	const two = it.next();
+	if (!one.value || !two.done) {
+		throw new Error("More than one or no items found");
+	}
+	return one.value;
+}

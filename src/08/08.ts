@@ -4,7 +4,7 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import { collect, iterMap, setRemove, bothHave } from "../utils.ts";
+import { collect, iterMap, setRemove, bothHave, iterOnlyOne } from "../utils.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
@@ -77,12 +77,14 @@ const getMapping = (segmentLine: string[]) => {
 			bothHave(seg, one).size === 1
 	);
 
-	links.set("a", setRemove(seven, one).values().next().value);
-	links.set("b", setRemove(nine, three).values().next().value);
-	links.set("c", setRemove(nine, five).values().next().value);
+	links.set("a", iterOnlyOne(setRemove(seven, one).values()));
+	links.set("b", iterOnlyOne(setRemove(nine, three).values()));
+	links.set("c", iterOnlyOne(setRemove(nine, five).values()));
+
 	const aAndG = setRemove(three, four);
 	aAndG.delete(links.get("a") as Segment);
-	links.set("g", aAndG.values().next().value);
+
+	links.set("g", iterOnlyOne(aAndG.values()));
 
 	const six = findOneSegment(
 		segSets,
@@ -105,9 +107,9 @@ const getMapping = (segmentLine: string[]) => {
 	);
 
 
-	links.set("e", setRemove(six, nine).values().next().value);
-	links.set("d", setRemove(eight, zero).values().next().value);
-	links.set("f", setRemove(three, two).values().next().value);
+	links.set("e", iterOnlyOne(setRemove(six, nine).values()));
+	links.set("d", iterOnlyOne(setRemove(eight, zero).values()));
+	links.set("f", iterOnlyOne(setRemove(three, two).values()));
 
 	return new Map(collect(iterMap(links.entries(), ([a, b]) => [b, a])))
 };
