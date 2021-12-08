@@ -27,3 +27,26 @@ export function* iterFilter<T>(
 		}
 	}
 }
+
+export function setRemove<T>(from: Set<T>, what: Set<T>): Set<T> {
+	const set = new Set(from);
+	for (const item of what) {
+		set.delete(item);
+	}
+	return set;
+}
+
+export function bothHave<T>(s1: Set<T>, s2: Set<T>): Set<T> {
+	const set = new Set<T>();
+	for (const item of s1) {
+		if (s2.has(item)) {
+			set.add(item);
+		}
+	}
+	for (const item of s2) {
+		if (s1.has(item)) {
+			set.add(item);
+		}
+	}
+	return set;
+}
