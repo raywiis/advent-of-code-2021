@@ -4,7 +4,7 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import {wrapIterator} from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts"
+import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
@@ -77,7 +77,7 @@ for (const number of numbers) {
 	currentBoards = wrapIterator(currentBoards.values())
 		.map((board) => removeFromBoard(board, number))
 		.toArray();
-	
+
 	for (const [bIdx, board] of currentBoards.entries()) {
 		if (winMap[bIdx]) {
 			continue;

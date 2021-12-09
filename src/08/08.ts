@@ -4,7 +4,13 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import { collect, iterMap, setRemove, bothHave, iterOnlyOne } from "../utils.ts";
+import {
+	collect,
+	iterMap,
+	setRemove,
+	bothHave,
+	iterOnlyOne,
+} from "../utils.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
@@ -52,7 +58,7 @@ const findOneSegment = (
 
 const getMapping = (segmentLine: string[]) => {
 	const links = new Map<Segment, Segment>();
-	const segSets = segmentLine.map(a => new Set(a)) as Set<Segment>[];
+	const segSets = segmentLine.map((a) => new Set(a)) as Set<Segment>[];
 
 	const one = findOneSegment(segSets, (seg) => seg.size === 2);
 	const seven = findOneSegment(segSets, (seg) => seg.size === 3);
@@ -106,35 +112,35 @@ const getMapping = (segmentLine: string[]) => {
 			bothHave(seg, three).size !== 5
 	);
 
-
 	links.set("e", iterOnlyOne(setRemove(six, nine).values()));
 	links.set("d", iterOnlyOne(setRemove(eight, zero).values()));
 	links.set("f", iterOnlyOne(setRemove(three, two).values()));
 
-	return new Map(collect(iterMap(links.entries(), ([a, b]) => [b, a])))
+	return new Map(collect(iterMap(links.entries(), ([a, b]) => [b, a])));
 };
 
 const segmentSets = segmentLists.map(intoSets);
 
-const decode = (mapping: Map<Segment, Segment>, segmentList: Segment[]): number => {
-	const segments = new Set(segmentList.map((s) => mapping.get(s)))
-	const res = segmentSets.find(
-		([, reference]) => {
-			const overlap = bothHave(reference, segments)
-			return overlap.size === reference.size && overlap.size === segments.size
-		}
-	);
+const decode = (
+	mapping: Map<Segment, Segment>,
+	segmentList: Segment[]
+): number => {
+	const segments = new Set(segmentList.map((s) => mapping.get(s)));
+	const res = segmentSets.find(([, reference]) => {
+		const overlap = bothHave(reference, segments);
+		return overlap.size === reference.size && overlap.size === segments.size;
+	});
 	if (!res) {
-		throw new Error('Unable to decode');
+		throw new Error("Unable to decode");
 	}
-	return res[0]
-}
+	return res[0];
+};
 
 let occurences = 0;
 let sum = 0;
 for (const { left, right } of data) {
 	const mappings = getMapping(left);
-	const nums = right.map(segs => decode(mappings, [...segs] as Segment[]))
+	const nums = right.map((segs) => decode(mappings, [...segs] as Segment[]));
 
 	for (const num of nums) {
 		if ([1, 4, 7, 8].includes(num)) {
@@ -142,7 +148,7 @@ for (const { left, right } of data) {
 		}
 	}
 
-	sum += parseInt(nums.join(''))
+	sum += parseInt(nums.join(""));
 }
 
 export const part1 = occurences;

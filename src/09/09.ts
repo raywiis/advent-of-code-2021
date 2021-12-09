@@ -60,10 +60,7 @@ const lows = findLows(map);
 
 const risks = lows.map(([_, height]) => height + 1).reduce((a, c) => a + c);
 
-const getBasinSize = (
-	map: Map<string, number>,
-	initialKey: string
-): number => {
+const getBasinSize = (map: Map<string, number>, initialKey: string): number => {
 	const queue = [initialKey];
 	const visited = new Set();
 	let size = 0;
@@ -71,9 +68,9 @@ const getBasinSize = (
 	while (queue.length > 0) {
 		const key = queue.shift() as string;
 		if (visited.has(key)) {
-			continue
+			continue;
 		}
-		visited.add(key)
+		visited.add(key);
 		size += 1;
 
 		const [row, col] = fromKey(key);
@@ -87,15 +84,14 @@ const getBasinSize = (
 				continue;
 			}
 
-			queue.push(nKey)
+			queue.push(nKey);
 		}
 	}
 
 	return size;
 };
 
-
 export const part1 = risks;
-const basins = lows.map(([key]) => getBasinSize(map, key))
-const largest3 = basins.sort((a, b) => b - a).slice(0, 3)
+const basins = lows.map(([key]) => getBasinSize(map, key));
+const largest3 = basins.sort((a, b) => b - a).slice(0, 3);
 export const part2 = largest3.reduce((a, b) => a * b);
