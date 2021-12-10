@@ -4,6 +4,7 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
+import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
@@ -68,8 +69,9 @@ export const corruptionSum = evals.reduce(
 	0
 );
 
-const compScores = evals
+const compScores = wrapIterator(evals.values())
 	.filter((e) => !e.corrupted)
 	.map((e) => e.completionScore)
+	.toArray()
 	.sort((a, b) => b - a);
 export const compScore = compScores[Math.floor(compScores.length / 2)];
