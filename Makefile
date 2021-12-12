@@ -1,5 +1,5 @@
 default:
-	deno run --allow-read --unstable src/11/11.ts
+	deno run --allow-read --unstable src/12/12.test.ts
 
 test:
-	deno test --allow-read --unstable
+	deno test --allow-read --unstable src/12
