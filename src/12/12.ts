@@ -16,19 +16,7 @@ export const findPaths = (
 	const stack: [CaveNode, Set<CaveNode>][] = [[startNode, new Set()]];
 	const visitedNodes = new DefaultMap<CaveNode, number>(0);
 
-	const visitLimits = new Map<CaveNode, number>(
-		wrapIterator(map.keys())
-			.map((node): [CaveNode, number] => {
-				if (isLargeNode(node)) {
-					return [node, Infinity];
-				}
-				if (duplicateVisits.has(node)) {
-					return [node, 2];
-				}
-				return [node, 1];
-			})
-			.toArray()
-	);
+	const visitLimits = calculateVisitLimits(map, duplicateVisits);
 
 	const paths = new Set<CaveNode[]>();
 	visitedNodes.set(startNode, 1);
@@ -90,13 +78,29 @@ export function findPathsMultivisit(cave: Cave): Set<string> {
 
 	wrapIterator(twiceVisitableNodes.values())
 		.map((node) => findPaths(cave, new Set([node])))
-		.forEach(paths => {
+		.forEach((paths) => {
 			for (const p of paths) {
-				allPaths.add(p.join(','))
+				allPaths.add(p.join(","));
 			}
-		})
+		});
 
 	return allPaths;
+}
+
+function calculateVisitLimits(
+	map: Map<string, Set<string>>,
+	duplicateVisits: Set<string>
+) {
+	const mapIt = wrapIterator(map.keys()).map((node): [CaveNode, number] => {
+		if (isLargeNode(node)) {
+			return [node, Infinity];
+		}
+		if (duplicateVisits.has(node)) {
+			return [node, 2];
+		}
+		return [node, 1];
+	});
+	return new Map<CaveNode, number>(mapIt.toArray());
 }
 
 function isLargeNode(node: CaveNode): boolean {
