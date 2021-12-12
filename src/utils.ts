@@ -63,15 +63,13 @@ export function iterOnlyOne<T>(it: IterableIterator<T>): T {
 export class DefaultMap<T, U> extends Map<T, U> {
 	defaultValue: U;
 
-	constructor(defaultValue: U, things: Iterable<readonly [T,U]> = []) {
+	constructor(defaultValue: U, things: Iterable<readonly [T, U]> = []) {
 		super(things);
 		this.defaultValue = defaultValue;
 	}
 
 	get(key: T): U {
 		const value = super.get(key);
-		return value !== undefined
-			? value
-			: this.defaultValue
+		return value !== undefined ? value : this.defaultValue;
 	}
 }

@@ -1,7 +1,6 @@
 import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 import { assert } from "https://deno.land/std@0.117.0/testing/asserts.ts";
-import { setRemove, DefaultMap} from "../utils.ts";
-
+import { setRemove, DefaultMap } from "../utils.ts";
 
 const startNode = "start";
 const endNode = "end";
@@ -9,7 +8,10 @@ const endNode = "end";
 export type CaveNode = string | typeof startNode | typeof endNode;
 export type Cave = [CaveNode, CaveNode][];
 
-export const findPaths = (cave: Cave, duplicateVisits: Set<CaveNode> = new Set()): CaveNode[][] => {
+export const findPaths = (
+	cave: Cave,
+	duplicateVisits: Set<CaveNode> = new Set()
+): CaveNode[][] => {
 	const map = buildMap(cave);
 	const stack: [CaveNode, Set<CaveNode>][] = [[startNode, new Set()]];
 	const visitedNodes = new DefaultMap<CaveNode, number>(0);
@@ -49,7 +51,7 @@ export const findPaths = (cave: Cave, duplicateVisits: Set<CaveNode> = new Set()
 		const unvisitedHeighbors = setRemove(allNeighbors, checkedNeighbors);
 
 		if (unvisitedHeighbors.size === 0) {
-			continue
+			continue;
 		}
 
 		const nextNeighbor = wrapIterator(unvisitedHeighbors.values()).find(
@@ -66,10 +68,10 @@ export const findPaths = (cave: Cave, duplicateVisits: Set<CaveNode> = new Set()
 
 		checkedNeighbors.add(nextNeighbor);
 
-		stack.push([currentNode, checkedNeighbors])
+		stack.push([currentNode, checkedNeighbors]);
 		visitedNodes.set(currentNode, visitedNodes.get(currentNode) + 1);
-		stack.push([nextNeighbor, new Set()])
-		visitedNodes.set(nextNeighbor, visitedNodes.get(nextNeighbor) + 1)
+		stack.push([nextNeighbor, new Set()]);
+		visitedNodes.set(nextNeighbor, visitedNodes.get(nextNeighbor) + 1);
 	}
 
 	return wrapIterator(paths.values()).toArray();
@@ -77,40 +79,42 @@ export const findPaths = (cave: Cave, duplicateVisits: Set<CaveNode> = new Set()
 
 export function findPathsMultivisit(cave: Cave): Set<string> {
 	const allPaths = new Set<string>();
-	const twiceVisitableNodes = new Set(wrapIterator(cave.values())
-		.flatMap((nodes) => nodes)
-		.filter(
-			(node) => !isLargeNode(node) && node !== startNode && node !== endNode
-		)
-		.toArray());
+	const twiceVisitableNodes = new Set(
+		wrapIterator(cave.values())
+			.flatMap((nodes) => nodes)
+			.filter(
+				(node) => !isLargeNode(node) && node !== startNode && node !== endNode
+			)
+			.toArray()
+	);
 
-	for (const node of twiceVisitableNodes) {
-		const paths = findPaths(cave, new Set([node]));
+	wrapIterator(twiceVisitableNodes.values())
+		.map((node) => findPaths(cave, new Set([node])))
+		.forEach(paths => {
+			for (const p of paths) {
+				allPaths.add(p.join(','))
+			}
+		})
 
-		for (const p of paths) {
-			allPaths.add(p.join(','));
-		}
-	}
-
-	return allPaths
+	return allPaths;
 }
 
 function isLargeNode(node: CaveNode): boolean {
 	return node.toUpperCase() === node;
 }
 
-function buildMap (cave: Cave): Map<CaveNode, Set<CaveNode>> {
+function buildMap(cave: Cave): Map<CaveNode, Set<CaveNode>> {
 	const map = new Map<CaveNode, Set<CaveNode>>();
 
 	for (const [a, b] of cave) {
 		const setA = map.get(a) || new Set();
 		const setB = map.get(b) || new Set();
 
-		setA.add(b)
-		setB.add(a)
+		setA.add(b);
+		setB.add(a);
 
-		map.set(a, setA)
-		map.set(b, setB)
+		map.set(a, setA);
+		map.set(b, setB);
 	}
 
 	return map;
