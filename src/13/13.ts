@@ -4,7 +4,6 @@ import {
 	join,
 } from "https://deno.land/std@0.116.0/path/mod.ts";
 import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
 import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 
 type Key = string;
