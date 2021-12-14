@@ -25,10 +25,13 @@ async function readInput(fileName: string): Promise<[Paper, FoldCommand[]]> {
 		map.set(toKey([x, y]), true);
 	}
 
-  const folds = foldData
+	const folds = foldData
 		.split(os.EOL())
 		.map((fold) => fold.split("="))
-		.map(([things, numS]): ["x" | "y", number] => [things.slice(11) as "x" | "y", parseInt(numS)]);
+		.map(([things, numS]): ["x" | "y", number] => [
+			things.slice(11) as "x" | "y",
+			parseInt(numS),
+		]);
 
 	return [map, folds];
 }
@@ -61,30 +64,28 @@ function plotMap(map: Paper) {
 
 function foldPaper(map: Paper, fold: FoldCommand) {
 	const foldedMap = new Map();
-  const [axis, position] = fold;
+	const [axis, position] = fold;
 
-  for (const [key, val] of map.entries()) {
-    const [oldX, oldY] = fromKey(key);
+	for (const [key, val] of map.entries()) {
+		const [oldX, oldY] = fromKey(key);
 
-    const newX = axis === 'x' && oldX > position
-      ? position - (oldX - position)
-      : oldX
+		const newX =
+			axis === "x" && oldX > position ? position - (oldX - position) : oldX;
 
-    const newY = axis === 'y' && oldY > position
-      ? position - (oldY - position)
-      : oldY
-    
-    foldedMap.set(toKey([newX, newY]), val);
-  }
+		const newY =
+			axis === "y" && oldY > position ? position - (oldY - position) : oldY;
 
-  return foldedMap;
+		foldedMap.set(toKey([newX, newY]), val);
+	}
+
+	return foldedMap;
 }
 
 let cMap = map;
 for (const fold of folds) {
-  cMap = foldPaper(cMap, fold);
+	cMap = foldPaper(cMap, fold);
 }
 
-console.log(foldPaper(map, folds[0]).size)
+console.log(foldPaper(map, folds[0]).size);
 
 plotMap(cMap);
