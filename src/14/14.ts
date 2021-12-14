@@ -1,19 +1,4 @@
-import {
-	fromFileUrl,
-	dirname,
-	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
 import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
-// console.log(template, rules)
-
-function bucket<T>(elements: T[]): Map<T, number> {
-	const map = new Map<T, number>();
-	for (const element of elements) {
-		map.set(element, (map.get(element) || 0) + 1);
-	}
-	return map;
-}
 
 export function getAnswer(
 	template: string,
@@ -58,20 +43,4 @@ export function getAnswer(
 	const min = Math.min(...wrapIterator(counts.values()).toArray()) / 2;
 
 	return max - min;
-
-	// for (let i = 0; i < iterationCount; i++) {
-	// 	let newPattern = pattern[0];
-	// 	for (let idx = 1; idx < pattern.length; idx++) {
-	// 		const rule = pattern[idx - 1] + pattern[idx];
-	// 		const product = rules.get(rule)
-	// 		newPattern += product;
-	// 		newPattern += pattern[idx]
-	// 	}
-	// 	pattern = newPattern
-	// }
-
-	// const counts = bucket([...pattern])
-	// const minCount = Math.min(...wrapIterator(counts.values()).toArray())
-	// const maxCount = Math.max(...wrapIterator(counts.values()).toArray())
-	// return maxCount - minCount;
 }
