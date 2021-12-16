@@ -35,10 +35,6 @@ const packetOperations: { [key: string]: (p: Packet) => number } = {
 		assert(p.subPackets);
 		return Math.max(...p.subPackets.map((p) => runPacket(p)));
 	},
-	4: (p) => {
-		assert(p.data);
-		return p.data;
-	},
 	5: (p) => {
 		assert(p.subPackets?.length === 2);
 		const [val1, val2] = p.subPackets.map((p) => runPacket(p));
