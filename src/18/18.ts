@@ -158,7 +158,7 @@ assertEquals(
 		[3, 3],
 		[4, 4],
 	]),
-	[[[[1,1],[2,2]],[3,3]],[4,4]]
+	JSON.parse("[[[[1,1],[2,2]],[3,3]],[4,4]]")
 );
 
 assertEquals(
@@ -169,7 +169,7 @@ assertEquals(
 		[4, 4],
 		[5, 5],
 	]),
-	JSON.parse('[[[[3,0],[5,3]],[4,4]],[5,5]]')
+	JSON.parse("[[[[3,0],[5,3]],[4,4]],[5,5]]")
 );
 
 function getMagnitude(number: SnailNumeral): number {
@@ -188,9 +188,7 @@ assertEquals(
 );
 
 assertEquals(
-	getMagnitude(
-		JSON.parse('[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
-	),
+	getMagnitude(JSON.parse("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")),
 	1384
 );
 

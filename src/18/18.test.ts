@@ -17,8 +17,8 @@ explodeExamples.forEach(([inputStr, expectationStr], idx) => {
 		const number = JSON.parse(inputStr);
 		const expect = JSON.parse(expectationStr);
 		assertEquals(explodeOne(number), expect);
-	})
-})
+	});
+});
 
 Deno.test("day 18 split reduction", () => {
 	const number = JSON.parse("[[[[0,7],4],[15,[0,13]]],[1,1]]");
@@ -27,7 +27,7 @@ Deno.test("day 18 split reduction", () => {
 });
 
 Deno.test("day 18 reduce", () => {
-	const number = JSON.parse('[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]')
-	const expect = JSON.parse('[[[[0,7],4],[[7,8],[6,0]]],[8,1]]')
+	const number = JSON.parse("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]");
+	const expect = JSON.parse("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]");
 	assertEquals(reduce(number), expect);
-})
+});
