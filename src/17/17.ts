@@ -20,7 +20,10 @@ function isWithin(position: number, range: [number, number]) {
 
 const initialPosition = [0, 0];
 
-function runYThrow(initialVelocity: number, [y1, y2]: [number, number]): number[] {
+function runYThrow(
+	initialVelocity: number,
+	[y1, y2]: [number, number]
+): number[] {
 	const positions = [];
 
 	let velocity = initialVelocity;
@@ -48,10 +51,12 @@ function runXThrow(initialVelocity: number, cap: number) {
 		positions.push(position);
 	}
 
-	return positions
+	return positions;
 }
 
-function getHighestYThrow(area: [number, number, number, number]): [number,Set<number>] {
+function getHighestYThrow(
+	area: [number, number, number, number]
+): [number, Set<number>] {
 	const [, , y1, y2] = area;
 
 	let velocity = Math.min(y1, y2) - 1;
@@ -63,13 +68,11 @@ function getHighestYThrow(area: [number, number, number, number]): [number,Set<n
 	do {
 		velocity += 1;
 		positions = runYThrow(velocity, [y1, y2]);
-		const inRangePositions = positions
-			.filter((pos) => isWithin(pos, [y1, y2]));
-		isWithinRange = inRangePositions.length > 0
-			? isWithinRange
-			: isWithinRange + 1
+		const inRangePositions = positions.filter((pos) => isWithin(pos, [y1, y2]));
+		isWithinRange =
+			inRangePositions.length > 0 ? isWithinRange : isWithinRange + 1;
 		if (inRangePositions.length > 0) {
-			validVelocities.add(velocity)
+			validVelocities.add(velocity);
 			bestPositions = positions;
 		}
 	} while (isWithinRange < 1000);
@@ -87,26 +90,22 @@ function getValidXThrows(area: [number, number, number, number]) {
 	do {
 		velocity += 1;
 		const positions = runXThrow(velocity, cap);
-		fallsWithin = positions.some((p) => isWithin(p, [x1, x2]))
-			? 1
-			: 0;
+		fallsWithin = positions.some((p) => isWithin(p, [x1, x2])) ? 1 : 0;
 	} while (fallsWithin === 0);
 
 	validVelocities.add(velocity);
 
 	do {
-		velocity += 1
+		velocity += 1;
 		const positions = runXThrow(velocity, cap);
-		const goodThrow = positions.some((p) => isWithin(p, [x1, x2]))
-		fallsWithin = goodThrow
-			? fallsWithin + 1
-			: fallsWithin
+		const goodThrow = positions.some((p) => isWithin(p, [x1, x2]));
+		fallsWithin = goodThrow ? fallsWithin + 1 : fallsWithin;
 		if (goodThrow) {
 			validVelocities.add(velocity);
 		}
-	} while (fallsWithin < 1000 && velocity < cap)
+	} while (fallsWithin < 1000 && velocity < cap);
 
-	return validVelocities
+	return validVelocities;
 }
 
 function runThrow(initialVelocity: [number, number]) {
@@ -125,9 +124,9 @@ function runThrow(initialVelocity: [number, number]) {
 	return positions;
 }
 
-const [highestThrow, validYThrows] = getHighestYThrow(targetArea)
+const [highestThrow, validYThrows] = getHighestYThrow(targetArea);
 // 15931
-console.log(highestThrow)
+console.log(highestThrow);
 
 const validXThrows = getValidXThrows(targetArea);
 
@@ -140,9 +139,9 @@ for (const x of validXThrows) {
 			isWithinArea(targetArea, p)
 		);
 		if (somePositionsInArea) {
-			validVelocities.add(velocity)
+			validVelocities.add(velocity);
 		}
 	}
 }
 
-console.log(validVelocities.size)
+console.log(validVelocities.size);

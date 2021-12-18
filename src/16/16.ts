@@ -53,11 +53,11 @@ const packetOperations: { [key: string]: (p: Packet) => number } = {
 };
 
 export function runPacket(p: Packet): number {
-	if (p.type === 4){
+	if (p.type === 4) {
 		assert(p.data);
-		return p.data
+		return p.data;
 	}
-	assert(p.subPackets)
+	assert(p.subPackets);
 	const op = packetOperations[p.type as keyof typeof packetOperations];
 	return op(p);
 }
