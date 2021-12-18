@@ -14,6 +14,29 @@ function isSame(a: SnailNumeral, b: SnailNumeral) {
 	return JSON.stringify(a) === JSON.stringify(b);
 }
 
+type StackEntry = [SnailNumeral, "left" | "right" | "done"];
+
+function buildNumber(
+	stack: StackEntry[],
+	{ leftAdapter, rightAdapter } = {
+		leftAdapter: (s: SnailNumeral): SnailNumeral => s,
+		rightAdapter: (s: SnailNumeral): SnailNumeral => s,
+	}
+): SnailNumeral {
+	const s = [...stack];
+	const top = s.pop();
+	assert(top);
+	const [replacement] = top;
+	return s.reduceRight((acc, [numeral, direction]) => {
+		assert(direction !== "left");
+		assert(isPair(numeral));
+		const [l, r] = numeral;
+		const newPair: SnailNumeral =
+			direction === "right" ? [acc, rightAdapter(r)] : [leftAdapter(l), acc];
+		return newPair;
+	}, replacement);
+}
+
 export function splitOne(number: Pair) {
 	const stack: [SnailNumeral, "left" | "right" | "done"][] = [[number, "left"]];
 
@@ -46,16 +69,7 @@ export function splitOne(number: Pair) {
 		return number;
 	}
 
-	const top = stack.pop();
-	assert(top);
-	const [replacement] = top;
-	return stack.reduceRight((acc, [numeral, direction]) => {
-		assert(isPair(numeral));
-		const [l, r] = numeral;
-		assert(direction !== "left");
-		const newPair: SnailNumeral = direction === "right" ? [acc, r] : [l, acc];
-		return newPair;
-	}, replacement);
+	return buildNumber(stack);
 }
 
 export function explodeOne(number: Pair) {
@@ -84,23 +98,19 @@ export function explodeOne(number: Pair) {
 		assert(isPair(top[0]));
 		let [leftAdd, rightAdd] = top[0] as [number, number];
 
-		let newNumber: SnailNumeral = 0;
-		while (stack.length > 0) {
-			const val = stack.pop();
-			assert(val);
-			const [numeral, direction] = val;
-			assert(isPair(numeral));
-			const [left, right] = numeral;
-
-			if (direction === "right") {
-				newNumber = [newNumber, explodeAddLeft(right, rightAdd)];
+		stack.push([0, "done"]);
+		return buildNumber(stack, {
+			rightAdapter(right) {
+				const res = explodeAddLeft(right, rightAdd);
 				rightAdd = 0;
-			} else {
-				newNumber = [explodeAddRight(left, leftAdd), newNumber];
+				return res;
+			},
+			leftAdapter(left) {
+				const res = explodeAddRight(left, leftAdd);
 				leftAdd = 0;
-			}
-		}
-		return newNumber;
+				return res;
+			},
+		});
 	} else {
 		return number;
 	}
