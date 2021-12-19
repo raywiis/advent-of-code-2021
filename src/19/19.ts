@@ -8,7 +8,7 @@ import {
 	assertEquals,
 	assert,
 } from "https://deno.land/std@0.116.0/testing/asserts.ts";
-import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
+import memoizy from "https://deno.land/x/memoizy@1.0.0/mod.ts";
 import { bothHave, DefaultMap } from "../utils.ts";
 
 type Pole = "+" | "-";
@@ -203,31 +203,37 @@ const getRRPKey = (
 ): RRPKey => JSON.stringify([scan.scannerNo, rotation, referencePoint]);
 const rotatedRelativePointCache = new Map<RRPKey, Set<string>>();
 
-type RPKey = string;
-const getRPKey = (scan: ScannerScan, rotation: Rotation): RPKey =>
-	JSON.stringify([scan.scannerNo, rotation]);
+const getRotatedScanPoints = memoizy(
+	(scan: ScannerScan, rotation: Rotation) => {
+		return scan.points.map((p) => rotateTo(rotation, p))
+	},
+	{
+		cacheKey: (scan: ScannerScan, rotation: Rotation) =>
+			JSON.stringify([scan.scannerNo, rotation]),
+	}
+);
 
-const rotationCache = new Map<RPKey, Point[]>();
+const getPointsRelativeTo = memoizy(
+	(scan: ScannerScan, reference: Point) => {
+		const relativePoints = pointsRelativeTo(scan.points, reference);
+		const set = new Set(relativePoints.map((p) => toKey(p)));
+		return set
+	},
+	{
+		cacheKey: (scan: ScannerScan, relative: Point) =>
+			JSON.stringify([scan.scannerNo, relative]),
+	}
+);
 
 function getPossibleRotation(
-	cloudA: Point[],
+	cloudA: ScannerScan,
 	cloudB: ScannerScan,
 ): [Rotation, Point, Point] | undefined {
-	for (const refA of cloudA) {
-		const normalizedCloudA = pointsRelativeTo(cloudA, refA);
-		const cloudASet = new Set(normalizedCloudA.map((p) => toKey(p)));
+	for (const refA of cloudA.points) {
+		const cloudASet = getPointsRelativeTo(cloudA, refA);
 
 		for (const rotation of rotations) {
-			const rpKey = getRPKey(cloudB, rotation);
-			if (!rotationCache.has(rpKey)) {
-				rotationCache.set(
-					rpKey,
-					cloudB.points.map((p) => rotateTo(rotation, p))
-				);
-			}
-			const rotatedCloud = rotationCache.get(rpKey);
-			assert(rotatedCloud);
-
+			const rotatedCloud = getRotatedScanPoints(cloudB, rotation);
 			for (const refB of rotatedCloud) {
 				const rrpKey = getRRPKey(cloudB, rotation, refB)
 				if (!rotatedRelativePointCache.has(rrpKey)) {
@@ -247,7 +253,7 @@ function getPossibleRotation(
 }
 
 function findCommons(
-	cloudA: Point[],
+	cloudA: ScannerScan,
 	cloudB: ScannerScan
 ): {
 	commonPoints: [Point, Point][];
@@ -264,7 +270,7 @@ function findCommons(
 	const [rotation, refA, refB] = matchParams;
 
 	const rotatedCloudB = cloudB.points.map((p) => rotateTo(rotation, p));
-	const mappedA = pointsRelativeTo(cloudA, refA);
+	const mappedA = pointsRelativeTo(cloudA.points, refA);
 	const mappedB = pointsRelativeTo(rotatedCloudB, refB);
 
 	const pairs = mappedA
@@ -273,7 +279,7 @@ function findCommons(
 			if (bMatchIdx === -1) {
 				return null;
 			}
-			const originalA = cloudA[idx];
+			const originalA = cloudA.points[idx];
 			const originalB = cloudB.points[bMatchIdx];
 			return [originalA, originalB];
 		})
@@ -303,7 +309,7 @@ function findOverlappingScans(unknownScans: ScannerScan[], knownScans: ScannerSc
 			if (mismatchSet.has(ref.scannerNo)) {
 				continue;
 			}
-			const matches = findCommons(ref.points, unknown)
+			const matches = findCommons(ref, unknown)
 
 			if (!matches) {
 				mismatchSet.add(ref.scannerNo)
