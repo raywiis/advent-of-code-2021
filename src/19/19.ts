@@ -9,7 +9,7 @@ import {
 	assert,
 } from "https://deno.land/std@0.116.0/testing/asserts.ts";
 import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
-import { bothHave } from "../utils.ts";
+import { bothHave, DefaultMap } from "../utils.ts";
 
 type Pole = "+" | "-";
 type Component = "x" | "y" | "z";
@@ -194,20 +194,35 @@ assertEquals(
 
 const input = await readInput("19.input.txt");
 
+
+type RRPKey = string;
+const getRRPKey = (
+	scan: ScannerScan,
+	rotation: Rotation,
+	referencePoint: Point
+): RRPKey => JSON.stringify([scan.scannerNo, rotation, referencePoint]);
+const rotatedRelativePointCache = new Map<RRPKey, Set<string>>();
+
 function getPossibleRotation(
 	cloudA: Point[],
-	cloudB: Point[]
+	cloudB: ScannerScan,
 ): [Rotation, Point, Point] | undefined {
 	for (const refA of cloudA) {
 		const normalizedCloudA = pointsRelativeTo(cloudA, refA);
 		const cloudASet = new Set(normalizedCloudA.map((p) => toKey(p)));
 
 		for (const rotation of rotations) {
-			const rotatedCloud = cloudB.map((p) => rotateTo(rotation, p));
+			const rotatedCloud = cloudB.points.map((p) => rotateTo(rotation, p));
 
 			for (const refB of rotatedCloud) {
-				const normalizedBCloud = pointsRelativeTo(rotatedCloud, refB);
-				const cloudBSet = new Set(normalizedBCloud.map((p) => toKey(p)));
+				const rrpKey = getRRPKey(cloudB, rotation, refB)
+				if (!rotatedRelativePointCache.has(rrpKey)) {
+					const normalizedBCloud = pointsRelativeTo(rotatedCloud, refB);
+					const cloudBSet = new Set(normalizedBCloud.map((p) => toKey(p)));
+					rotatedRelativePointCache.set(rrpKey, cloudBSet);
+				}
+				const cloudBSet = rotatedRelativePointCache.get(rrpKey);
+				assert(cloudBSet);
 				const matches = bothHave(cloudASet, cloudBSet);
 				if (matches.size >= 12) {
 					return [rotation, refA, refB];
@@ -219,7 +234,7 @@ function getPossibleRotation(
 
 function findCommons(
 	cloudA: Point[],
-	cloudB: Point[]
+	cloudB: ScannerScan
 ): {
 	commonPoints: [Point, Point][];
 	cloudBRotation: Rotation;
@@ -234,7 +249,7 @@ function findCommons(
 
 	const [rotation, refA, refB] = matchParams;
 
-	const rotatedCloudB = cloudB.map((p) => rotateTo(rotation, p));
+	const rotatedCloudB = cloudB.points.map((p) => rotateTo(rotation, p));
 	const mappedA = pointsRelativeTo(cloudA, refA);
 	const mappedB = pointsRelativeTo(rotatedCloudB, refB);
 
@@ -245,7 +260,7 @@ function findCommons(
 				return null;
 			}
 			const originalA = cloudA[idx];
-			const originalB = cloudB[bMatchIdx];
+			const originalB = cloudB.points[bMatchIdx];
 			return [originalA, originalB];
 		})
 		.filter((p): p is [Point, Point] => p !== null);
@@ -264,20 +279,17 @@ function findCommons(
 	};
 }
 
-const knownMismatches = new Map<number, Set<number>>();
+const knownMismatches = new DefaultMap<number, Set<number>>(() => new Set());
 
 function findOverlappingScans(unknownScans: ScannerScan[], knownScans: ScannerScan[]) {
 	for (const unknown of unknownScans) {
-		if (!knownMismatches.has(unknown.scannerNo)) {
-			knownMismatches.set(unknown.scannerNo, new Set())
-		}
 		const mismatchSet = knownMismatches.get(unknown.scannerNo);
 		assert(mismatchSet);
 		for (const ref of knownScans) {
 			if (mismatchSet.has(ref.scannerNo)) {
 				continue;
 			}
-			const matches = findCommons(ref.points, unknown.points)
+			const matches = findCommons(ref.points, unknown)
 
 			if (!matches) {
 				mismatchSet.add(ref.scannerNo)
@@ -305,10 +317,6 @@ const rotationMap = new Map<number, Rotation[]>([
 const offsets = new Map<number, Point>([
 	[input[0].scannerNo, [0, 0, 0]]
 ]);
-
-function subtractPoints([a, b, c]: Point, [x, y, z]: Point): Point {
-	return [a - x, b - y, c - z];
-}
 
 while (queue.length > 0) {
 	console.log(`${addedScans.length}/${queue.length}`);
@@ -356,6 +364,10 @@ for (const offsetA of offsets.values()) {
 		distances.push(getDistance(offsetA, offsetB));
 	}
 }
+
+/** My input answers */
+assertEquals(points.size, 438);
+assertEquals(Math.max(...distances), 11985);
 
 console.log(points.size)
 console.log(Math.max(...distances))

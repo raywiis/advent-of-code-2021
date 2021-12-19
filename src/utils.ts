@@ -1,3 +1,5 @@
+import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+
 export function* iterMap<T, U>(
 	it: IterableIterator<T>,
 	mapfn: (value: T, idx: number) => U
@@ -61,15 +63,22 @@ export function iterOnlyOne<T>(it: IterableIterator<T>): T {
 }
 
 export class DefaultMap<T, U> extends Map<T, U> {
-	defaultValue: U;
+	defaultValue: (key: T) => U;
 
-	constructor(defaultValue: U, things: Iterable<readonly [T, U]> = []) {
+	constructor(
+		defaultValueBuilder: (key: T) => U,
+		things: Iterable<readonly [T, U]> = []
+	) {
 		super(things);
-		this.defaultValue = defaultValue;
+		this.defaultValue = defaultValueBuilder;
 	}
 
 	get(key: T): U {
+		if (!super.has(key)) {
+			super.set(key, this.defaultValue(key))
+		}
 		const value = super.get(key);
-		return value !== undefined ? value : this.defaultValue;
+		assert(value);
+		return value;
 	}
 }
