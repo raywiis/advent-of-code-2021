@@ -203,6 +203,12 @@ const getRRPKey = (
 ): RRPKey => JSON.stringify([scan.scannerNo, rotation, referencePoint]);
 const rotatedRelativePointCache = new Map<RRPKey, Set<string>>();
 
+type RPKey = string;
+const getRPKey = (scan: ScannerScan, rotation: Rotation): RPKey =>
+	JSON.stringify([scan.scannerNo, rotation]);
+
+const rotationCache = new Map<RPKey, Point[]>();
+
 function getPossibleRotation(
 	cloudA: Point[],
 	cloudB: ScannerScan,
@@ -212,7 +218,15 @@ function getPossibleRotation(
 		const cloudASet = new Set(normalizedCloudA.map((p) => toKey(p)));
 
 		for (const rotation of rotations) {
-			const rotatedCloud = cloudB.points.map((p) => rotateTo(rotation, p));
+			const rpKey = getRPKey(cloudB, rotation);
+			if (!rotationCache.has(rpKey)) {
+				rotationCache.set(
+					rpKey,
+					cloudB.points.map((p) => rotateTo(rotation, p))
+				);
+			}
+			const rotatedCloud = rotationCache.get(rpKey);
+			assert(rotatedCloud);
 
 			for (const refB of rotatedCloud) {
 				const rrpKey = getRRPKey(cloudB, rotation, refB)
