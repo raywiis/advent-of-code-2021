@@ -75,7 +75,7 @@ export class DefaultMap<T, U> extends Map<T, U> {
 
 	get(key: T): U {
 		if (!super.has(key)) {
-			super.set(key, this.defaultValue(key))
+			super.set(key, this.defaultValue(key));
 		}
 		const value = super.get(key);
 		assert(value);

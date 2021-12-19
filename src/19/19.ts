@@ -195,7 +195,7 @@ assertEquals(
 const input = await readInput("19.input.txt");
 const getRotatedScanPoints = memoizy(
 	(scan: ScannerScan, rotation: Rotation) => {
-		return scan.points.map((p) => rotateTo(rotation, p))
+		return scan.points.map((p) => rotateTo(rotation, p));
 	},
 	{
 		cacheKey: (scan: ScannerScan, rotation: Rotation) =>
@@ -207,7 +207,7 @@ const getPointsRelativeTo = memoizy(
 	(scan: ScannerScan, reference: Point) => {
 		const relativePoints = pointsRelativeTo(scan.points, reference);
 		const set = new Set(relativePoints.map((p) => toKey(p)));
-		return set
+		return set;
 	},
 	{
 		cacheKey: (scan: ScannerScan, relative: Point) =>
@@ -230,7 +230,7 @@ const getRotatedRelativePoints = memoizy(
 
 function getPossibleRotation(
 	cloudA: ScannerScan,
-	cloudB: ScannerScan,
+	cloudB: ScannerScan
 ): [Rotation, Point, Point] | undefined {
 	for (const refA of cloudA.points) {
 		const cloudASet = getPointsRelativeTo(cloudA, refA);
@@ -284,7 +284,9 @@ function findCommons(
 	const [posARaw, posBRaw] = pairs[0];
 	const posBRotated = rotateTo(rotation, posBRaw);
 
-	const cloudBOffset: Point = posARaw.map((p, idx) => p - posBRotated[idx]) as Point;
+	const cloudBOffset: Point = posARaw.map(
+		(p, idx) => p - posBRotated[idx]
+	) as Point;
 
 	return {
 		commonPoints: pairs,
@@ -297,25 +299,27 @@ function findCommons(
 
 const knownMismatches = new DefaultMap<number, Set<number>>(() => new Set());
 
-function findOverlappingScans(unknownScans: ScannerScan[], knownScans: ScannerScan[]) {
+function findOverlappingScans(
+	unknownScans: ScannerScan[],
+	knownScans: ScannerScan[]
+) {
 	for (const unknown of unknownScans) {
 		const mismatchSet = knownMismatches.get(unknown.scannerNo);
-		assert(mismatchSet);
 		for (const ref of knownScans) {
 			if (mismatchSet.has(ref.scannerNo)) {
 				continue;
 			}
-			const matches = findCommons(ref, unknown)
+			const matches = findCommons(ref, unknown);
 
 			if (!matches) {
-				mismatchSet.add(ref.scannerNo)
-				continue
+				mismatchSet.add(ref.scannerNo);
+				continue;
 			}
 			return {
 				known: ref,
 				found: unknown,
-				matches
-			}
+				matches,
+			};
 		}
 	}
 }
@@ -327,54 +331,37 @@ function addPoints([a, b, c]: Point, [x, y, z]: Point): Point {
 const queue = [...input.slice(1)];
 const addedScans = [input[0]];
 const points = new Set(input[0].points.map((p) => toKey(p)));
-const rotationMap = new Map<number, Rotation[]>([
-	[input[0].scannerNo, [["+z", "+x"]]],
-]);
-const offsets = new Map<number, Point>([
-	[input[0].scannerNo, [0, 0, 0]]
-]);
+const offsets = new Map<number, Point>([[input[0].scannerNo, [0, 0, 0]]]);
 
 while (queue.length > 0) {
-	console.log(`${addedScans.length}/${queue.length}`);
 	const res = findOverlappingScans(queue, addedScans);
 	assert(res);
-	const {known, found, matches} = res;
+	const { found, matches } = res;
 
-	const knownOffset = offsets.get(known.scannerNo);
-	const foundOffset = matches.cloudBOffset;
-	assert(knownOffset);
-	const totalOffset = foundOffset;
+	const totalOffset = matches.cloudBOffset;
 	offsets.set(found.scannerNo, totalOffset);
 
-	const knownRotations = rotationMap.get(known.scannerNo);
-	assert(knownRotations);
-	const foundRotations = [...knownRotations, matches.cloudBRotation];
-	rotationMap.set(found.scannerNo, foundRotations)
-
-	const foundPointsGlobal = found.points
-		.map((p) => {
-			return rotateTo(matches.cloudBRotation, p);
-		})
-		.map((p) => addPoints(p, totalOffset));
+	const foundPointsGlobal = found.points.map((p) =>
+		addPoints(rotateTo(matches.cloudBRotation, p), totalOffset)
+	);
 
 	for (const foundPoint of foundPointsGlobal) {
-		points.add(toKey(foundPoint))
+		points.add(toKey(foundPoint));
 	}
 
-	const foundIdx = queue.findIndex((s) => s.scannerNo === found.scannerNo)
+	const foundIdx = queue.findIndex((s) => s.scannerNo === found.scannerNo);
 	queue.splice(foundIdx, 1);
 	addedScans.push({
 		scannerNo: found.scannerNo,
-		points: foundPointsGlobal
-	})
+		points: foundPointsGlobal,
+	});
 }
-
 
 function getDistance([a, b, c]: Point, [x, y, z]: Point): number {
 	return a - x + (b - y) + (c - z);
 }
 
-const distances = []
+const distances = [];
 for (const offsetA of offsets.values()) {
 	for (const offsetB of offsets.values()) {
 		distances.push(getDistance(offsetA, offsetB));
@@ -385,5 +372,5 @@ for (const offsetA of offsets.values()) {
 assertEquals(points.size, 438);
 assertEquals(Math.max(...distances), 11985);
 
-console.log(points.size)
-console.log(Math.max(...distances))
+console.log(points.size);
+console.log(Math.max(...distances));
