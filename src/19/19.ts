@@ -172,8 +172,8 @@ function pointRelativeTo([x, y, z]: Point, [rx, ry, rz]: Point): Point {
 	return [x - rx, y - ry, z - rz];
 }
 
-function pointsRelativeTo(points: Point[], [rx, ry, rz]: Point): Point[] {
-	return points.map(([x, y, z]) => [x - rx, y - ry, z - rz]);
+function pointsRelativeTo(points: Point[], rel: Point): Point[] {
+	return points.map((point) => pointRelativeTo(point, rel));
 }
 
 const toKey = (p: Point) => JSON.stringify(p);
@@ -264,11 +264,25 @@ function findCommons(
 	};
 }
 
+const knownMismatches = new Map<number, Set<number>>();
+
 function findOverlappingScans(unknownScans: ScannerScan[], knownScans: ScannerScan[]) {
 	for (const unknown of unknownScans) {
+		if (!knownMismatches.has(unknown.scannerNo)) {
+			knownMismatches.set(unknown.scannerNo, new Set())
+		}
+		const mismatchSet = knownMismatches.get(unknown.scannerNo);
+		assert(mismatchSet);
 		for (const ref of knownScans) {
+			if (mismatchSet.has(ref.scannerNo)) {
+				continue;
+			}
 			const matches = findCommons(ref.points, unknown.points)
-			if (matches)
+
+			if (!matches) {
+				mismatchSet.add(ref.scannerNo)
+				continue
+			}
 			return {
 				known: ref,
 				found: unknown,
