@@ -193,16 +193,6 @@ assertEquals(
 );
 
 const input = await readInput("19.input.txt");
-
-
-type RRPKey = string;
-const getRRPKey = (
-	scan: ScannerScan,
-	rotation: Rotation,
-	referencePoint: Point
-): RRPKey => JSON.stringify([scan.scannerNo, rotation, referencePoint]);
-const rotatedRelativePointCache = new Map<RRPKey, Set<string>>();
-
 const getRotatedScanPoints = memoizy(
 	(scan: ScannerScan, rotation: Rotation) => {
 		return scan.points.map((p) => rotateTo(rotation, p))
@@ -225,6 +215,19 @@ const getPointsRelativeTo = memoizy(
 	}
 );
 
+const getRotatedRelativePoints = memoizy(
+	(scan: ScannerScan, rotation: Rotation, relative: Point) => {
+		const rotatedCloud = getRotatedScanPoints(scan, rotation);
+		const normalizedBCloud = pointsRelativeTo(rotatedCloud, relative);
+		const set = new Set(normalizedBCloud.map((p) => toKey(p)));
+		return set;
+	},
+	{
+		cacheKey: (scan: ScannerScan, rotation: Rotation, relative: Point) =>
+			JSON.stringify([scan.scannerNo, rotation, relative]),
+	}
+);
+
 function getPossibleRotation(
 	cloudA: ScannerScan,
 	cloudB: ScannerScan,
@@ -235,14 +238,7 @@ function getPossibleRotation(
 		for (const rotation of rotations) {
 			const rotatedCloud = getRotatedScanPoints(cloudB, rotation);
 			for (const refB of rotatedCloud) {
-				const rrpKey = getRRPKey(cloudB, rotation, refB)
-				if (!rotatedRelativePointCache.has(rrpKey)) {
-					const normalizedBCloud = pointsRelativeTo(rotatedCloud, refB);
-					const cloudBSet = new Set(normalizedBCloud.map((p) => toKey(p)));
-					rotatedRelativePointCache.set(rrpKey, cloudBSet);
-				}
-				const cloudBSet = rotatedRelativePointCache.get(rrpKey);
-				assert(cloudBSet);
+				const cloudBSet = getRotatedRelativePoints(cloudB, rotation, refB);
 				const matches = bothHave(cloudASet, cloudBSet);
 				if (matches.size >= 12) {
 					return [rotation, refA, refB];
