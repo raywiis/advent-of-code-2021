@@ -8,19 +8,19 @@ import {
 	assertEquals,
 	assert,
 } from "https://deno.land/std@0.116.0/testing/asserts.ts";
-import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 
 type Range = [start: number, end: number];
 type Cube = [x: Range, y: Range, z: Range];
 type State = "on" | "off";
 type Command = [State, Cube];
+type Operation = ["+" | "-", Cube];
 
 async function readInput(fileName: string): Promise<Command[]> {
 	const inputFilePath = join(dirname(fromFileUrl(import.meta.url)), fileName);
 	const input = await Deno.readTextFile(inputFilePath);
 	const data = input.split(os.EOL());
 
-  return data.map(line => parseCommand(line))
+	return data.map((line) => parseCommand(line));
 }
 
 function parseCommand(s: string): Command {
@@ -54,102 +54,85 @@ function getOverlap(c1: Cube, c2: Cube): Cube | null {
 		return [oStart, oEnd];
 	});
 
-
 	const deltas = bounds.map(([a, b]) => b - a);
-  assert(bounds.length === 3);
+	assert(bounds.length === 3);
 
-	if (deltas.some((delta) => delta <= 0)) {
+	if (deltas.some((delta) => delta < 0)) {
 		return null;
 	} else {
-    return bounds as Cube;
+		return bounds as Cube;
 	}
 }
 
-function isCube(c: Cube | null): c is Cube {
-  return c !== null
+const oppositeOp = (op: "+" | "-") => (op === "+" ? "-" : "+");
+
+function getNewOps(
+	current: Command,
+	previous: Operation[]
+): Operation[] {
+	const [op, area] = current;
+
+  const ops: Operation[] = []
+
+	if (op === "on") {
+		ops.push(["+", area]);
+	}
+
+	for (const [prevOp, prevArea] of previous) {
+		const newOp = oppositeOp(prevOp);
+		const newArea = getOverlap(prevArea, area);
+
+		if (newArea !== null) ops.push([newOp, newArea]);
+	}
+
+	return ops;
 }
 
-function getOverlaps(...cubes: (Cube|null)[]): Cube | null {
-  assert(cubes.length > 0);
-  if (cubes.length === 1) {
-    return cubes[1]
-  }
-  return cubes.reduce((acc: Cube | null, c) =>
-		isCube(acc) && isCube(c) ? getOverlap(acc, c) : null
-	);
+function countOpLights(ops: Operation[]): number {
+	return ops.reduce((acc, [s, area]) => {
+		if (area === null) {
+			return acc;
+		}
+		const areaSize = measureSize(area);
+		return s === "+" ? acc + areaSize : acc - areaSize;
+	}, 0);
 }
+
+const input = await readInput("22.input.txt");
+
+const p1Overlap: Cube = [
+	[-50, 50],
+	[-50, 50],
+	[-50, 50],
+];
 
 assertEquals(
-	getOverlaps(
-		[
-			[-2, 1],
-			[-2, 1],
-			[-2, 1],
-		],
-		[
-			[-1, 2],
-			[-1, 2],
-			[-1, 2],
-		],
-		[
-			[0, 3],
-			[0, 3],
-			[0, 3],
-		]
-	),
+	getOverlap(p1Overlap, [
+		[10, 10],
+		[10, 10],
+		[10, 10],
+	]),
 	[
-		[0, 1],
-		[0, 1],
-		[0, 1],
+		[10, 10],
+		[10, 10],
+		[10, 10],
 	]
 );
 
-/**
- * + & + -> - overlap
- * + & - -> + overlap
- * - & + -> - overlap
- * - & - -> + overlap
- */
+const p1Input = input;
+// .map(([op, area]) => [op, getOverlap(area, p1Overlap)])
+// .filter((cmd): cmd is Command => cmd[1] !== null);
 
-/**
- * + & + & + -> - 1 & 2 overlap - 2 & 3 overlap
- */
+let opStack: Operation[] = [];
 
-function countChange([op, area]: Command, previousCommands: Command[]): number {
-  const operationArea = measureSize(area);
-  let change = op === "on" ? +operationArea : -operationArea;
-
-  for (const [prevOp, prevArea] of previousCommands) {
-    const overlap = getOverlap(area, prevArea);
-    if (!overlap) {
-      continue
-    }
-    if (op === "on" && prevOp === "on") {
-      change -= measureSize(overlap);
-    } else if (op === "off" && prevOp === "on") {
-    } else {
-      throw new Error("Unsupported op match")
-    }
-  }
-
-  return change
+for (let i = 0; i < p1Input.length; i++) {
+	const cmd = p1Input[i];
+	const newOpStack = getNewOps(cmd, opStack);
+	opStack = opStack.concat(newOpStack);
 }
 
-// function countLights(input: Command[]) {
-//   let totalLights = 0;
+// 132447 too low
+// 442626 too low
+// 648827 too high
 
-//   for (let i = 0; i < input.length; i++) {
-//     if (i == 2) {
-//       break
-//     }
-
-//     const change = countChange(input[i], input.slice(0, i));
-//     totalLights += change
-//   }
-
-//   return totalLights
-// }
-
-// const input = await readInput("22.sample_1.txt");
-
-// console.log(countLights(input))
+console.log(countOpLights(opStack));
