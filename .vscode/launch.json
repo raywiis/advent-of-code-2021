@@ -8,9 +8,9 @@
 			"request": "launch",
 			"name": "Launch Program",
 			"type": "pwa-node",
-			"program": "${workspaceFolder}/src/19/19.ts",
+			"program": "${workspaceFolder}/src/23/23.ts",
 			"cwd": "${workspaceFolder}",
-			"runtimeExecutable": "C:\\ProgramData\\chocolatey\\bin\\deno.EXE",
+			"runtimeExecutable": "deno",
 			"runtimeArgs": ["run", "--inspect-brk", "--allow-all", "--unstable"],
 			"attachSimplePort": 9229
 		}
