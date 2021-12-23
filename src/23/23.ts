@@ -360,8 +360,27 @@ assert(getPotentialMoves({
   D2: "A",
 }, "H1").length > 0)
 
-console.log(findCheapestSolution(mapState))
+// console.log(findCheapestSolution(mapState))
+
+const D = moveCost.D;
+const A = moveCost.A;
+const B = moveCost.B;
+const C = moveCost.C
 
 // const startingMovers = new Set<ShellTile>(
 // 	["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2"]
 // )
+
+assertEquals(2 * D + 5 * A + 5 * A + 5 * B + 5 * C + 3 * D + 5 * D + 3*C + 6 * C + 5 * B + 6 * A, 11516)
+
+// #############
+// #...........#
+// ###C#A#B#D###
+//   #D#C#B#A#
+//   #D#B#A#C#
+//   #B#A#D#C#
+//   #########
+
+
+console.log(
+)
