@@ -1,5 +1,4 @@
 import {
-	assertEquals,
 	assert,
 } from "https://deno.land/std@0.116.0/testing/asserts.ts";
 import { Register, Instruction, monad } from "./monad.ts";
@@ -24,7 +23,6 @@ function isRegister(r: Register | number): r is Register {
 
 function exec(op: Instruction, state: State): State {
 	if (op[0] === "inp") {
-		// console.log('inp', state.input[0])
 		assert(state.input.length > 0, "Input too short");
 		const dest = op[1];
 		return {
@@ -107,20 +105,8 @@ function verify(num: number): boolean {
 	return state.registers.z === 0;
 }
 
-// const valids = new Set();
-// for (let i = 99999999999999; i > 10000000000000; i--) {
-// 	if (verify(i)) {
-// 		valids.add(i);
-// 		console.log(i);
-// 		break;
-// 	}
-// }
+const largest = parseInt([9, 9, 9, 9, 5, 9, 6, 9, 9, 1, 9, 3, 2, 6].join(''), 10)
+console.log(verify(largest), largest);
 
-const largest = [9, 9, 9, 9, 5, 9, 6, 9, 9, 1, 9, 3, 2, 6]
-console.log(largest.join(''))
-console.log(run(monad, largest));
-
-
-const smallest = [4, 8, 1, 1, 1, 5, 1, 4, 7, 1, 9, 1, 1, 1]
-console.log(smallest.join(''))
-console.log(run(monad, smallest));
+const smallest = parseInt([4, 8, 1, 1, 1, 5, 1, 4, 7, 1, 9, 1, 1, 1].join(''))
+console.log(verify(smallest), smallest);
