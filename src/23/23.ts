@@ -1,386 +1,297 @@
-import {
-	assertEquals,
-	assert,
-} from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
 
 type Shell = "A" | "B" | "C" | "D";
-type Silo = { designation: Shell; place1: Shell | null; place2: Shell | null };
+type Silo = Shell[];
+type Tile = Silo | Shell | null;
 
-type Tile = ShellTile | HallwayTile;
-type ShellTile = `${Shell}${1 | 2}`;
-type HallwayTile = `F${1 | 2}${1 | 2}` | `H${1 | 2 | 3}`;
-
-type State = { [tile in Tile]: Shell | null };
-
-// const initialState: { [key in ShellTile]: Shell } = {
-// 	A1: "B",
-// 	A2: "A",
-// 	B1: "C",
-// 	B2: "D",
-// 	C1: "B",
-// 	C2: "C",
-// 	D1: "D",
-// 	D2: "A",
-// };
-
-const initialState: { [key in ShellTile]: Shell } = {
-	A1: "C",
-	A2: "B",
-	B1: "A",
-	B2: "A",
-	C1: "B",
-	C2: "D",
-	D1: "D",
-	D2: "C",
-};
-
-const mapState: State = {
-	// A1: null,
-	// A2: null,
-	// B1: null,
-	// B2: null,
-	// C1: null,
-	// C2: null,
-	// D1: null,
-	// D2: null,
-
-	H1: null,
-	H2: null,
-	H3: null,
-	F11: null,
-	F12: null,
-	F21: null,
-	F22: null,
-
-	...initialState
-};
-
-const hallway = new Set<Tile>(["H1", "H2", "H3", "F11", "F12", "F21", "F22"]);
-
-const assignedSilos: { [shell in Shell]: Tile[] } = {
-	A: ["A2", "A1"],
-	B: ["B2", "B1"],
-	C: ["C2", "C1"],
-	D: ["D1", "D2"],
-};
-
-const moveCost: { [type in Shell]: number } = {
+const shellCost: { [key in Shell]: number } = {
 	A: 1,
 	B: 10,
 	C: 100,
 	D: 1000,
 };
 
-const isHallwayTile = (tile: Tile): tile is HallwayTile => {
-	return tile.startsWith("H") || tile.startsWith("F");
+const idxSilo: { [x: number]: Shell } = {
+	2: "A",
+	4: "B",
+	6: "C",
+	8: "D",
 };
 
-const sequence: Tile[] = [
-	"F12",
-	"F11",
-	"A1",
-	"A2",
-	"H1",
-	"B1",
-	"B2",
-	"H2",
-	"C1",
-	"C2",
-	"H3",
-	"D1",
-	"D2",
-	"F21",
-	"F22",
+type StateKey = string;
+
+type Hallway = [
+	Tile,
+	Tile,
+	Silo,
+	Tile,
+	Silo,
+	Tile,
+	Silo,
+	Tile,
+	Silo,
+	Tile,
+	Tile
+];
+type State = Hallway;
+
+// const siloDepth = 2;
+
+// const initialStacks: { [s in Shell]: Shell[] } = {
+// 	A: ["B", "A"],
+// 	B: ["C", "D"],
+// 	C: ["B", "C"],
+// 	D: ["D", "A"],
+// };
+
+// const initialStacks: { [s in Shell]: Shell[] } = {
+// 	A: ["C", "B"],
+// 	B: ["A", "A"],
+// 	C: ["B", "D"],
+// 	D: ["D", "C"],
+// };
+
+const siloDepth = 4;
+
+// const initialStacks: { [s in Shell]: Shell[] } = {
+// 	A: ["B", "D","D", "A"],
+// 	B: ["C", "C", "B", "D"],
+// 	C: ["B", "B", "A", "C"],
+// 	D: ["D", "A", "C", "A"],
+// };
+
+const initialStacks: { [s in Shell]: Shell[] } = {
+	A: ["C", "D", "D", "B"],
+	B: ["A", "C", "B", "A"],
+	C: ["B", "B", "A", "D"],
+	D: ["D", "A", "C", "C"],
+};
+
+const initialState: State = [
+	null,
+	null,
+	initialStacks.A,
+	null,
+	initialStacks.B,
+	null,
+	initialStacks.C,
+	null,
+	initialStacks.D,
+	null,
+	null,
 ];
 
-const hallwayTiles: HallwayTile[] = sequence.filter((t): t is HallwayTile => isHallwayTile(t));
+const stateToKey = (s: State): StateKey => JSON.stringify(s);
+const stateFromKey = (s: StateKey): State => JSON.parse(s);
 
-// A1 -> C2: H1, H2, C2
+const tileIsSilo = (t: Tile): t is Silo => Array.isArray(t);
+const tileIsHallway = (t: Tile): t is Shell | null => !tileIsSilo(t);
 
-function isBlocked(from: Tile, to: Tile, state: State): boolean {
-	const potentialBlockers: Tile[] = [];
-
-	if (state[to] !== null) {
-		return true
-	}
-
-	if (!isHallwayTile(from) && from.endsWith("2")) {
-		potentialBlockers.push(`${from[0] as Shell}1`);
-	}
-
-	if (!isHallwayTile(to) && to.endsWith("2")) {
-		potentialBlockers.push(`${to[0] as Shell}1`);
-	}
-
-	const fromIdx = sequence.findIndex((t) => t === from);
-	const toIdx = sequence.findIndex((t) => t === to);
-
-	const start = Math.min(fromIdx, toIdx) + 1;
-	const end = Math.max(fromIdx, toIdx);
-
-	const hallways = sequence.slice(start, end).filter((t) => isHallwayTile(t));
-	hallways.forEach((t) => potentialBlockers.push(t));
-
-	return potentialBlockers.some((blocker) => state[blocker]);
+function getCost(tileMoves: number, type: Shell): number {
+	return tileMoves * shellCost[type];
 }
 
-// isBlocked("F22", "F12", mapState);
-// isBlocked("F12", "F22", mapState);
-// isBlocked("A2", "D2", mapState);
-// isBlocked("H1", "D1", mapState);
-// isBlocked("H1", "B1", mapState);
+function* getMovedStatesFrom(
+	state: State,
+	initialPosition: number
+): Generator<[move: number, cost: number]> {
+	const initialTile = state[initialPosition];
+	const startInHallway = tileIsHallway(initialTile);
+	const shellType = startInHallway ? initialTile : initialTile[0];
 
-function canGo(
-	shellType: Shell,
-	position: Tile,
-	destination: Tile,
-	state: State
-): boolean {
-	if (position === destination) {
-		return false;
+	if (
+		tileIsSilo(initialTile) &&
+		initialTile.every((t) => t === idxSilo[initialPosition])
+	) {
+		return;
 	}
-	if (state[destination] !== null) {
-		return false;
-	}
-	const shellIsDestType = destination.startsWith(shellType);
-	const blocked = isBlocked(position, destination, state)
-	// if (isHallwayTile(position) && shellIsDestType) {
-	// 	return false;
-	// }
-	if (blocked) {
-		return false;
-	}
-	if (isHallwayTile(destination)) {
-		return true;
-	}
-	const destDepth = destination[1];
-	const destShell = destination[0] as Shell;
-	// Can't leave lower part empty
-	if (destDepth === '1' && state[`${destShell}2`] === null) {
-		return false;
-	}
-	// if (isHallwayTile(destination)) {
-	// 	return true
-	// }
-	return true;
-}
 
-function getPodsToMove(state: State): Tile[] {
-	const tilesInMove = Object.entries(state)
-		.filter(([tile, pod]) => {
-			if (!pod) {
-				return false;
+	assert(initialTile);
+	assert(shellType);
+
+	// Left
+	for (let position = initialPosition - 1; position >= 0; position--) {
+		const targetTile = state[position];
+		const targetIsHallway = tileIsHallway(targetTile);
+
+		if (targetIsHallway) {
+			// Hallway must be blocked
+			if (targetTile !== null) {
+				break;
 			}
-			if (isHallwayTile(tile as Tile)) {
-				return true;
+			// Can't move from hallway to hallway
+			if (startInHallway) {
+				continue;
 			}
-			const tileShell = tile[0] as Shell;
-			const tileDepth = tile[1];
-			if (tileDepth === "2") {
-				// We're actually set
-				if (tileShell === pod) {
-					return false;
-				}
-				// We're actually blocked
-				if (state[`${tileShell}1`] !== null) {
-					return false;
-				}
-				// We're in the wrong tile and not blocked
-				return true;
-			} else { // tileDepth === '1'
-				// We're blocking a neighbor
-				if (state[`${tileShell}2`] !== tileShell) {
-					return true
-				}
-				// We're actually in the wrong tile ourselves
-				if (tileShell !== pod) {
-					return true;
-				}
-				// We're not blocking anyone and we're set
-				return false
-			}
-		})
-		.map(([tile]): Tile => {
-			return tile as Tile
-		})
-		return tilesInMove
-}
-
-
-function getPotentialMoves(state: State, from: Tile): Tile[]{
-	const shell = state[from]
-
-	assert(shell);
-
-	if (isHallwayTile(from)) {
-		const moves: Tile[] = []
-
-		const topStop: Tile = `${shell}1`;
-		const bottomStop: Tile = `${shell}2`;
-		if (
-			state[topStop] === null &&
-			state[bottomStop] === shell &&
-			!isBlocked(from, topStop, state)
-		) {
-			moves.push(topStop);
+			const startingDepth = siloDepth - initialTile.length + 1;
+			const moveCost = Math.abs(initialPosition - position);
+			const totalCost = startingDepth + moveCost;
+			yield [position, getCost(totalCost, shellType)];
+			continue;
 		}
-		if (state[bottomStop] === null && !isBlocked(from, bottomStop, state)) {
-			moves.push(bottomStop);
+
+		const siloType = idxSilo[position];
+		assert(siloType);
+
+		if (siloType !== shellType) {
+			continue;
 		}
-		return moves;
+
+		assert(targetTile.length <= siloDepth);
+
+		const siloIsAvailable =
+			targetTile.every((pod) => pod === siloType) || targetTile.length === 0;
+		if (!siloIsAvailable) {
+			continue;
+		}
+
+		const exitCost = tileIsSilo(initialTile)
+			? siloDepth - initialTile.length + 1
+			: 0;
+		const entryCost = siloDepth - targetTile.length;
+		const moveCost = Math.abs(initialPosition - position);
+		const totalCost = exitCost + entryCost + moveCost;
+
+		yield [position, getCost(totalCost, shellType)];
+	}
+
+	// Right
+	for (
+		let position = initialPosition + 1;
+		position < state.length;
+		position++
+	) {
+		const targetTile = state[position];
+		const targetIsHallway = tileIsHallway(targetTile);
+
+		if (targetIsHallway) {
+			// Hallway must be blocked
+			if (targetTile !== null) {
+				break;
+			}
+			// Can't move from hallway to hallway
+			if (startInHallway) {
+				continue;
+			}
+			const startingDepth = siloDepth - initialTile.length + 1;
+			const moveCost = Math.abs(initialPosition - position);
+			const totalCost = startingDepth + moveCost;
+			yield [position, getCost(totalCost, shellType)];
+			continue;
+		}
+
+		const siloType = idxSilo[position];
+		assert(siloType);
+
+		if (siloType !== shellType) {
+			continue;
+		}
+
+		assert(targetTile.length <= siloDepth);
+
+		const siloIsAvailable =
+			targetTile.every((pod) => pod === siloType) || targetTile.length === 0;
+		if (!siloIsAvailable) {
+			continue;
+		}
+
+		const exitCost = tileIsSilo(initialTile)
+			? siloDepth - initialTile.length + 1
+			: 0;
+		const entryCost = siloDepth - targetTile.length;
+		const moveCost = Math.abs(initialPosition - position);
+		const totalCost = exitCost + entryCost + moveCost;
+
+		yield [position, getCost(totalCost, shellType)];
+	}
+	// Right
+}
+
+function doMove(state: State, from: number, to: number): State {
+	const fromTile = state[from];
+	assert(fromTile);
+
+	const shell = tileIsSilo(fromTile) ? fromTile[0] : fromTile;
+
+	const newState: State = [...state];
+
+	if (tileIsSilo(fromTile)) {
+		const newSilo = fromTile.slice(1);
+		newState[from] = newSilo;
 	} else {
-		const directDeep: Tile[] = ["A2", "B2", "C2", "D2"].filter(
-			(t): t is Tile => t[0] === shell && state[`${t[0]}1`] === null && !isBlocked(from, t as Tile, state)
-		);
-		const directSurface: Tile[] = ["A1", "B1", "C1", "D1"].filter(
-			(t): t is Tile => t[0] === shell && state[`${t[0]}2`] === t[0] && !isBlocked(from, t as Tile, state)
-		);
-
-		return [
-			...directDeep,
-			...directSurface,
-			...hallwayTiles.filter(t => canGo(shell, from, t, state))
-		]
-	}
-}
-
-const distances = {
-	'A': 1,
-	'B': 2,
-	'C': 3,
-	'D': 4
-}
-
-function getHallways(from: Tile, to: Tile): HallwayTile[] {
-	const fromIdx = sequence.findIndex((t) => t === from);
-	const toIdx = sequence.findIndex((t) => t === to);
-
-	const start = Math.min(fromIdx, toIdx) + 1;
-	const end = Math.max(fromIdx, toIdx);
-
-	const hallways = sequence.slice(start, end).filter((t): t is HallwayTile => isHallwayTile(t));
-	return hallways
-}
-
-function getMoveCost(from: Tile, to: Tile, type: Shell): number {
-	if (!isHallwayTile(from) && !isHallwayTile(to)) {
-		const fromShell = from[0] as Shell;
-		const toShell = to[0] as Shell;
-		const hTiles = Math.abs(distances[fromShell] - distances[toShell]);
-
-		let depthCosts = 0
-		if (from[1] === '2') {
-			depthCosts += 1;
-		}
-		if (to[1] === '2') {
-			depthCosts += 2;
-		} else {
-			depthCosts += 1;
-		}
-
-		const moves = depthCosts + hTiles * 2 + 1
-
-		return moves * moveCost[type];
+		newState[from] = null;
 	}
 
-	const hallwayTile = isHallwayTile(from) ? from : to;
-	const siloTile = isHallwayTile(from) ? to : from;
-	let moves = 0;
-	if (hallwayTile === "F12" || hallwayTile === "F22") {
-		moves -= 1
-	}
-	if (siloTile[1] === "1") {
-		moves += 1
+	const toTile = state[to];
+	if (tileIsSilo(toTile)) {
+		const newSilo = [shell, ...toTile];
+		newState[to] = newSilo;
 	} else {
-		moves += 2
+		newState[to] = shell;
 	}
 
-	const halls = getHallways(hallwayTile, siloTile).length
-
-	moves += (halls * 2) + 1;
-
-	return moves * moveCost[type];
+	return newState;
 }
 
-function findCheapestSolution(state: State, depth = 0): number {
-	const pods = getPodsToMove(state);
-
-	if (pods.length === 0) {
-		return 0;
-	}
-
-	const podNTo = []
-	for (const pod of pods) {
-		const potentialMoves = getPotentialMoves(state, pod);
-
-		for (const move of potentialMoves) {
-			podNTo.push([pod, move]);
+function* getMovedStates(state: State): Generator<[State, number]> {
+	for (const [idx, tile] of state.entries()) {
+		if (tile === null) {
+			continue;
+		}
+		if (tileIsSilo(tile) && tile.length === 0) {
+			continue;
+		}
+		for (const [move, cost] of getMovedStatesFrom(state, idx)) {
+			yield [doMove(state, idx, move), cost];
 		}
 	}
-
-	const costs: number[] = [];
-	for (const [from, to] of podNTo) {
-		const type = state[from];
-		assert(type)
-		const moveCost = getMoveCost(from, to, type);
-		const furtherCost = findCheapestSolution(
-			{
-				...state,
-				[from]: null,
-				[to]: state[from],
-			},
-			depth + 1
-		);
-
-		costs.push(furtherCost + moveCost);
-
-		// console.log(from, to, moveCost)
-	}
-
-	return Math.min(...costs)
 }
 
-assertEquals(getMoveCost("B1", "C1", "C"), 400);
+function finalState(state: State): boolean {
+	return (
+		state[2].length === siloDepth &&
+		state[4].length === siloDepth &&
+		state[6].length === siloDepth &&
+		state[8].length === siloDepth &&
+		state[2].every((a) => a === "A") &&
+		state[4].every((a) => a === "B") &&
+		state[6].every((a) => a === "C") &&
+		state[8].every((a) => a === "D")
+	);
+}
 
-assert(getPotentialMoves({
-  H1: "B",
-  H2: "D",
-  H3: null,
-  F11: null,
-  F12: null,
-  F21: null,
-  F22: null,
-  A1: "B",
-  A2: "A",
-  B1: null,
-  B2: null,
-  C1: "C",
-  C2: "C",
-  D1: "D",
-  D2: "A",
-}, "H1").length > 0)
+const queue: [StateKey, number][] = [[stateToKey(initialState), 0]];
+const visited = new Map<StateKey, number>();
 
-// console.log(findCheapestSolution(mapState))
+while (queue.length > 0) {
+	const node = queue.shift();
+	assert(node);
+	const [key, prevCost] = node;
 
-const D = moveCost.D;
-const A = moveCost.A;
-const B = moveCost.B;
-const C = moveCost.C
+	if (visited.has(key)) {
+		const cost = visited.get(key);
+		assert(cost);
+		assert(cost <= prevCost);
+		continue;
+	}
 
-// const startingMovers = new Set<ShellTile>(
-// 	["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2"]
-// )
+	visited.set(key, prevCost);
 
-assertEquals(2 * D + 5 * A + 5 * A + 5 * B + 5 * C + 3 * D + 5 * D + 3*C + 6 * C + 5 * B + 6 * A, 11516)
+	const state = stateFromKey(key);
 
-// #############
-// #...........#
-// ###C#A#B#D###
-//   #D#C#B#A#
-//   #D#B#A#C#
-//   #B#A#D#C#
-//   #########
+	if (finalState(state)) {
+		console.log("found", prevCost);
+		break;
+	}
 
+	for (const [newState, cost] of getMovedStates(state)) {
+		const newKey = stateToKey(newState);
+		const totalCost = cost + prevCost;
 
-console.log(
-)
+		const queuePriority = queue.findIndex(([_, c]) => c > totalCost);
+
+		queuePriority === -1
+			? queue.push([newKey, totalCost])
+			: queue.splice(queuePriority, 0, [newKey, totalCost]);
+	}
+}

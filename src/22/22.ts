@@ -66,13 +66,10 @@ function getOverlap(c1: Cube, c2: Cube): Cube | null {
 
 const oppositeOp = (op: "+" | "-") => (op === "+" ? "-" : "+");
 
-function getNewOps(
-	current: Command,
-	previous: Operation[]
-): Operation[] {
+function getNewOps(current: Command, previous: Operation[]): Operation[] {
 	const [op, area] = current;
 
-  const ops: Operation[] = []
+	const ops: Operation[] = [];
 
 	if (op === "on") {
 		ops.push(["+", area]);

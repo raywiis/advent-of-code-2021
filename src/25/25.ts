@@ -330,6 +330,9 @@ let moves = 0
 
 while (!same) {
 	moves += 1;
+	if (moves % 100 === 0) {
+		console.log()
+	}
 	const [newSame, newMap] = doRound(map);
 	same = newSame;
 	map = newMap;
