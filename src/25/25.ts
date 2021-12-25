@@ -98,12 +98,12 @@ function move(map: Map<PosKey, Tile>, movers: Cucumber): Map<PosKey, Tile> {
 		for (let x = xMin; x <= xMax; x++) {
 			const source = pToKey([x, y]);
 			const tile = map.get(source);
-			assert(tile)
+			assert(tile);
 			if (tile !== movers) {
 				if (!newMap.has(source)) {
 					newMap.set(source, tile);
 				}
-				continue
+				continue;
 			}
 
 			const dest = pToKey(
@@ -111,9 +111,9 @@ function move(map: Map<PosKey, Tile>, movers: Cucumber): Map<PosKey, Tile> {
 			);
 			const destTile = map.get(dest);
 			assert(destTile);
-			if (destTile !== '.') {
+			if (destTile !== ".") {
 				newMap.set(source, tile);
-				continue
+				continue;
 			}
 
 			newMap.set(dest, tile);
@@ -322,16 +322,16 @@ v>.v...vvv.v.v.>>.>.>.v......v>.>....v...v>>>.>........>>.....v.>v.>.v>...>v...v
 >.v..>....>>vv.>>.v.v.>>>v..>>v>>>>..>.vv.v>..v.>>v.>..v..v..v.>..vvvvv..>....>>..v.v.vvv>vvv>.v.>v.vv>.>...v.>v....vv.v.>>v...vv...vv...v.
 ....>>..>...>...vv.>....v..>vvvv>vv.>v.>vvv..v>v>......vvvv.....>...>vv...>.>......>>......>>..v..>>......v..vv...>>v...v>v.>>>..>v..vv..v.
 .vv>>>>...>.v.>....v....vv>.>.>v.>...>>v.....v.v.>.v.>v>>..v>v.vv>vvv.>v>..v>v>.>..>vvv>...v.>...>..v.....>.v.>vvvv..>v.>>vv.....v>v>.v.vv>
-`
+`;
 
 let map = parseInput(sampleInput);
-let same = false
-let moves = 0
+let same = false;
+let moves = 0;
 
 while (!same) {
 	moves += 1;
 	if (moves % 100 === 0) {
-		console.log()
+		console.log();
 	}
 	const [newSame, newMap] = doRound(map);
 	same = newSame;

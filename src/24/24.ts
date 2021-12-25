@@ -1,6 +1,4 @@
-import {
-	assert,
-} from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
 import { Register, Instruction, monad } from "./monad.ts";
 
 type Memory = { [r in Register]: number };
@@ -105,8 +103,11 @@ function verify(num: number): boolean {
 	return state.registers.z === 0;
 }
 
-const largest = parseInt([9, 9, 9, 9, 5, 9, 6, 9, 9, 1, 9, 3, 2, 6].join(''), 10)
+const largest = parseInt(
+	[9, 9, 9, 9, 5, 9, 6, 9, 9, 1, 9, 3, 2, 6].join(""),
+	10
+);
 console.log(verify(largest), largest);
 
-const smallest = parseInt([4, 8, 1, 1, 1, 5, 1, 4, 7, 1, 9, 1, 1, 1].join(''))
+const smallest = parseInt([4, 8, 1, 1, 1, 5, 1, 4, 7, 1, 9, 1, 1, 1].join(""));
 console.log(verify(smallest), smallest);

@@ -33,7 +33,7 @@ async function readInput(fileName: string): Promise<[Pixel[], Picture]> {
 }
 
 function draw(map: Picture, seq: Pixel[], even: boolean) {
-	const defaultPixel = seq[0] === '#' && !even ? "#" : ".";
+	const defaultPixel = seq[0] === "#" && !even ? "#" : ".";
 	const yMax =
 		5 +
 		Math.max(
@@ -104,8 +104,13 @@ const applyDelta = ([x, y]: Position, [dx, dy]: [number, number]): Position => [
 const positionToKey = (p: Position): PositionKey => JSON.stringify(p);
 const keyToPosition = (k: PositionKey): Position => JSON.parse(k);
 
-function getNumber(picture: Picture, pos: Position, seq: Pixel[], even: boolean): number {
-	const defaultPixel = seq[0] === '#' && even ? "#" : ".";
+function getNumber(
+	picture: Picture,
+	pos: Position,
+	seq: Pixel[],
+	even: boolean
+): number {
+	const defaultPixel = seq[0] === "#" && even ? "#" : ".";
 	const bits = lookups
 		.map((delta) => {
 			const bp = applyDelta(pos, delta);
@@ -173,20 +178,20 @@ function countLights(pic: Picture) {
 	);
 }
 
-function doubleEnhance(image:Picture, seq: Pixel[]): Picture {
+function doubleEnhance(image: Picture, seq: Pixel[]): Picture {
 	const single = enhance(image, seq, false);
 	const double = enhance(single, seq, true);
 
 	const litSpots = wrapIterator(double.entries())
 		.filter(([_key, pixel]) => pixel === "#")
 		.toArray();
-	
-	const xMax = Math.max(...litSpots.map(([key]) => keyToPosition(key)[0]))
-	const yMax = Math.max(...litSpots.map(([key]) => keyToPosition(key)[1]))
-	const xMin = Math.min(...litSpots.map(([key]) => keyToPosition(key)[0]))
-	const yMin = Math.min(...litSpots.map(([key]) => keyToPosition(key)[1]))
 
-	const reducedImage: Picture = new Map()
+	const xMax = Math.max(...litSpots.map(([key]) => keyToPosition(key)[0]));
+	const yMax = Math.max(...litSpots.map(([key]) => keyToPosition(key)[1]));
+	const xMin = Math.min(...litSpots.map(([key]) => keyToPosition(key)[0]));
+	const yMin = Math.min(...litSpots.map(([key]) => keyToPosition(key)[1]));
+
+	const reducedImage: Picture = new Map();
 	for (let x = xMin; x <= xMax; x++) {
 		for (let y = yMin; y <= yMax; y++) {
 			const k = positionToKey([x, y]);
@@ -198,20 +203,24 @@ function doubleEnhance(image:Picture, seq: Pixel[]): Picture {
 	return reducedImage;
 }
 
-function doubleEnhanceTimes(image: Picture, seq: Pixel[], times: number): Picture {
-	let img = image
+function doubleEnhanceTimes(
+	image: Picture,
+	seq: Pixel[],
+	times: number
+): Picture {
+	let img = image;
 	for (let i = 0; i < times; i++) {
 		img = doubleEnhance(img, seq);
 	}
-	return img
+	return img;
 }
 
 const deSample = doubleEnhance(samplePicture, sampleSequence);
-const fiftyTimeSample = doubleEnhanceTimes(samplePicture, sampleSequence, 25)
+const fiftyTimeSample = doubleEnhanceTimes(samplePicture, sampleSequence, 25);
 assertEquals(countLights(deSample), 35);
 assertEquals(countLights(fiftyTimeSample), 3351);
 
-const doubleEnh = doubleEnhance(inputPicture, inputSequence)
+const doubleEnh = doubleEnhance(inputPicture, inputSequence);
 const fiftyTimeInput = doubleEnhanceTimes(inputPicture, inputSequence, 25);
 assertEquals(countLights(doubleEnh), 5065);
 assertEquals(countLights(fiftyTimeInput), 14790);
