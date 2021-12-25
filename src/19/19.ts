@@ -2,13 +2,11 @@ import {
 	fromFileUrl,
 	dirname,
 	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import {
 	assertEquals,
 	assert,
-} from "https://deno.land/std@0.116.0/testing/asserts.ts";
-import memoizy from "https://deno.land/x/memoizy@1.0.0/mod.ts";
+	os,
+	memoizy,
+} from "../deps.ts";
 import { bothHave, DefaultMap } from "../utils.ts";
 
 type Pole = "+" | "-";

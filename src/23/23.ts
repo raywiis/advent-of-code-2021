@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "../deps.ts";
 
 type Shell = "A" | "B" | "C" | "D";
 type Silo = Shell[];

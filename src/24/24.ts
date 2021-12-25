@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "../deps.ts";
 import { Register, Instruction, monad } from "./monad.ts";
 
 type Memory = { [r in Register]: number };

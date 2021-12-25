@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { day256Count, day80Count } from "./06.ts";
 
 Deno.test("after 80 days", () => {

@@ -1,9 +1,4 @@
-import {
-	fromFileUrl,
-	dirname,
-	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { fromFileUrl, dirname, join, assertEquals } from "../deps.ts";
 import { hexToBinary, sumVersions, parsePacket, runPacket } from "./16.ts";
 
 const inputFilePath = join(

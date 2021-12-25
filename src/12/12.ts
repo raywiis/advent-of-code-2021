@@ -1,5 +1,4 @@
-import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
-import { assert } from "https://deno.land/std@0.117.0/testing/asserts.ts";
+import { assert, wrapIterator } from "../deps.ts";
 import { setRemove, DefaultMap } from "../utils.ts";
 
 const startNode = "start";
@@ -14,7 +13,7 @@ export const findPaths = (
 ): CaveNode[][] => {
 	const map = buildMap(cave);
 	const stack: [CaveNode, Set<CaveNode>][] = [[startNode, new Set()]];
-	const visitedNodes = new DefaultMap<CaveNode, number>(0);
+	const visitedNodes = new DefaultMap<CaveNode, number>(() => 0);
 
 	const visitLimits = calculateVisitLimits(map, duplicateVisits);
 

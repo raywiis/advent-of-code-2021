@@ -1,4 +1,4 @@
-import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
+import { wrapIterator } from "../deps.ts";
 
 export function getAnswer(
 	template: string,

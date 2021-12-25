@@ -1,7 +1,4 @@
-import {
-	assertEquals,
-	assert,
-} from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "../deps.ts";
 import { wrapIterator } from "https://deno.land/x/iterator_helpers@v0.1.1/mod.ts";
 
 type Cucumber = "v" | ">";

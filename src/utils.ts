@@ -1,4 +1,4 @@
-import { assert } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assert } from "./deps.ts";
 
 export function* iterMap<T, U>(
 	it: IterableIterator<T>,
@@ -78,7 +78,7 @@ export class DefaultMap<T, U> extends Map<T, U> {
 			super.set(key, this.defaultValue(key));
 		}
 		const value = super.get(key);
-		assert(value);
+		assert(value !== undefined);
 		return value;
 	}
 }

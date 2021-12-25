@@ -2,12 +2,10 @@ import {
 	fromFileUrl,
 	dirname,
 	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import {
 	assertEquals,
 	assert,
-} from "https://deno.land/std@0.116.0/testing/asserts.ts";
+	os,
+} from "../deps.ts";
 
 type Range = [start: number, end: number];
 type Cube = [x: Range, y: Range, z: Range];

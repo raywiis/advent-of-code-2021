@@ -1,9 +1,4 @@
-import {
-	fromFileUrl,
-	dirname,
-	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
+import { fromFileUrl, dirname, join, os } from "../deps.ts";
 import {
 	collect,
 	iterMap,

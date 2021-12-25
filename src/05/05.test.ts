@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { horizontalOverlaps, wholeOverlaps } from "./05.ts";
 
 Deno.test("horizontal lines only", () => {

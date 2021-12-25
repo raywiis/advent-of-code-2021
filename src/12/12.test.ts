@@ -1,10 +1,4 @@
-import {
-	fromFileUrl,
-	dirname,
-	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
-import os from "https://deno.land/x/dos@v0.11.0/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { fromFileUrl, dirname, join, assertEquals, os } from "../deps.ts";
 import { findPaths, findPathsMultivisit, Cave } from "./12.ts";
 
 async function readInput(fileName: string): Promise<Cave> {

@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.116.0/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { compScore, corruptionSum } from "./10.ts";
 
 Deno.test("corruption cost", () => {

@@ -1,8 +1,4 @@
-import {
-	fromFileUrl,
-	dirname,
-	join,
-} from "https://deno.land/std@0.116.0/path/mod.ts";
+import { fromFileUrl, dirname, join } from "../deps.ts";
 
 const inputFilePath = join(
 	dirname(fromFileUrl(import.meta.url)),
